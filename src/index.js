@@ -1,17 +1,28 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import { AuthProvider } from "./context/AuthContext"; // Import the AuthProvider
-import { BrowserRouter } from "react-router-dom";  // Import BrowserRouter
+import { AuthProvider, useAuth } from "./context/AuthContext"; // Authentication context
+import { BrowserRouter } from "react-router-dom"; // Router for navigation
+import LoadingPage from "./pages/loadingPage"; // Loading screen
+
+function AppWrapper() {
+  const { loading } = useAuth();
+
+  if (loading) {
+    return <LoadingPage />; // Show loading screen while checking auth
+  }
+
+  return <App />; // Render the app once auth is checked
+}
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
   <React.StrictMode>
-    <BrowserRouter>  {/* Wrap with BrowserRouter */}
-      <AuthProvider>
-        <App />
-      </AuthProvider>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <AppWrapper /> {/* Uses AppWrapper for auth loading */}
+      </BrowserRouter>
+    </AuthProvider>
   </React.StrictMode>
 );

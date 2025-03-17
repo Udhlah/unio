@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
-      await fetchUserData(user); // Use the fetchUserData function
+      await fetchUserData(user);
       setLoading(false);
     });
 
@@ -47,21 +47,29 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const updateUserData = async (updatedData) => {
-    setUserData((prevData) => ({
-      ...prevData,
-      ...updatedData,
-    }));
-
     if (currentUser) {
+      setLoading(true); //set loading to true.
       try {
         const userRef = doc(db, "users", currentUser.uid);
-        await setDoc(userRef, {
-          ...userData,
-          ...updatedData,
-        }, { merge: true });
+        await setDoc(
+          userRef,
+          {
+            ...userData,
+            ...updatedData,
+          },
+          { merge: true }
+        );
         console.log("User data updated in Firestore");
+
+        // Update local state AFTER successful Firestore update
+        setUserData((prevData) => ({
+          ...prevData,
+          ...updatedData,
+        }));
       } catch (error) {
         console.error("Error updating user data in Firestore:", error);
+      } finally {
+        setLoading(false); // set loading to false.
       }
     }
   };
@@ -71,7 +79,7 @@ export const AuthProvider = ({ children }) => {
     userData,
     loading,
     updateUserData,
-    fetchUserData, // Expose the fetchUserData function
+    fetchUserData,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
